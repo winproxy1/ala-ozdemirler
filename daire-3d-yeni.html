@@ -264,6 +264,11 @@ const M = {
     side: THREE.DoubleSide, depthWrite: false, envMapIntensity: 1.8 }),
   mirror: std({ color: 0xffffff, metalness: 1, roughness: .03, envMapIntensity: 3 }),
   sofa: std({ map: tFabric, color: 0xb7afa2, roughness: .96 }),
+  gunnared: std({ map: tFabric, color: 0x5d6064, roughness: .96 }),        // LANDSKRONA cover, Gunnared dark grey
+  gunnaredCush: std({ map: tFabric, color: 0x686b70, roughness: .96 }),
+  kelinge: std({ map: tFabric, color: 0xcbbda3, roughness: .96 }),          // STRANDMON cover, Kelinge beige
+  kilanda: std({ map: tFabric, color: 0xd8cfbc, roughness: .96 }),          // EKENASET cover, Kilanda light beige
+  ekWood: std({ map: tGrain, color: 0x6a4630, roughness: .5 }),              // EKENASET frame, dark-stained solid wood
   sofaCush: std({ map: tFabric, color: 0xc9c2b6, roughness: .96 }),
   armchair: std({ map: tFabric, color: 0x4d6a5b, roughness: .96 }),
   armCush: std({ map: tFabric, color: 0x5a7969, roughness: .96 }),
@@ -547,6 +552,48 @@ tp([417.5, 969.3], [296.5, 969.3]); tp([296.2, 969.5], [299.3, 844.5]);
 
 const fixtures = new THREE.Group(); fixtures.visible = false; scene.add(fixtures);   // ceiling lamps / pendants, eye-level views only
 // ---------------------------------------------------------------- furniture builders
+// IKEA LANDSKRONA 3-seat sofa, Gunnared dark grey, metal legs (art. 592.703.06): 204x89x78 cm, arm height 64, seat height 44, seat depth 61.
+function landskrona(r, f) {
+  const { g, w, d } = G(r, f), arm = .12, zb = -d / 2, bk = .16, fab = M.gunnared, cu = M.gunnaredCush; tag("IKEA LANDSKRONA 3'lü", g, w, d, .9);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const lx = sx * (w / 2 - .09), lz = sz * (d / 2 - .09); cyl(g, lx, 0, .15, lz, .012, .012, M.chrome, 10); }
+  for (const sz of [-1, 1]) tube(v3(-w / 2 + .09, .012, sz * (d / 2 - .09)), v3(w / 2 - .09, .012, sz * (d / 2 - .09)), .01, M.chrome, g);          // chromed runners
+  lb(g, -w / 2, w / 2, .15, .31, zb, d / 2 - .02, fab, .025);                                                    // base
+  lb(g, -w / 2, w / 2, .15, .74, zb, zb + bk, fab, .035);                                                        // back frame
+  for (const sx of [-1, 1]) lb(g, sx * w / 2, sx * (w / 2 - arm), .15, .64, zb, d / 2 - .02, fab, .035);         // slim arms, 64 cm high
+  const sw = (w - 2 * arm) / 3;
+  for (let i = 0; i < 3; i++) { const x0 = -w / 2 + arm + i * sw;
+    lb(g, x0 + .006, x0 + sw - .006, .30, .44, zb + bk + .1, d / 2, cu, .045);                                   // seat cushions, 44 cm high
+    const b = lb(g, x0 + .012, x0 + sw - .012, .43, .78, zb + bk - .02, zb + bk + .13, cu, .06); b.rotation.x = -.12;
+    const bt = mesh(new THREE.SphereGeometry(.014, 10, 8), fab, g, false); bt.scale.z = .4; bt.position.set(x0 + sw / 2, .62, zb + bk + .128); }
+}
+// IKEA STRANDMON wing chair, Kelinge beige (art. 104.928.13): 82x96x101 cm, seat height 45, seat 49x54 cm, wooden legs.
+function strandmon(r, f) {
+  const { g, w, d } = G(r, f), zb = -d / 2, fab = M.kelinge; tag('IKEA STRANDMON berjer', g, w, d, 1.08);
+  for (const sx of [-1, 1]) { cyl(g, sx * (w / 2 - .12), 0, .19, d / 2 - .14, .024, .016, M.walnut, 10); const bl = cyl(g, sx * (w / 2 - .14), 0, .19, zb + .16, .024, .016, M.walnut, 10); bl.rotation.x = -.18; }
+  lb(g, -w / 2 + .1, w / 2 - .1, .18, .35, zb + .14, d / 2 - .06, fab, .04);                                     // seat frame
+  lb(g, -w / 2 + .165, w / 2 - .165, .33, .46, zb + .3, d / 2 - .02, fab, .055);                                 // seat cushion 49 cm wide
+  const back = lb(g, -w / 2 + .14, w / 2 - .14, .34, 1.0, zb + .1, zb + .28, fab, .08); back.rotation.x = -.13;  // high back
+  for (const sx of [-1, 1]) { const x0 = sx * (w / 2 - .01), x1 = sx * (w / 2 - .15);
+    lb(g, x0, x1, .2, .56, zb + .2, d / 2 - .1, fab, .05);                                                      // arm
+    const roll = mesh(new THREE.CylinderGeometry(.078, .078, d - .34, 20), fab, g); roll.rotation.x = Math.PI / 2; roll.position.set(sx * (w / 2 - .078), .56, .03);
+    const cap = mesh(new THREE.SphereGeometry(.078, 16, 12), fab, g); cap.position.set(sx * (w / 2 - .078), .56, d / 2 - .14);
+    const wing = lb(g, sx * (w / 2 - .03), sx * (w / 2 - .13), .58, .98, zb + .12, zb + .44, fab, .05); wing.rotation.x = -.13; wing.rotation.y = sx * -.12; }
+}
+// IKEA EKENASET armchair, Kilanda light beige (art. 905.331.74): 64x78x76 cm, armrest height 63, seat height 45, seat 56x50 cm.
+// Mid-century frame in dark-stained solid wood with slim wooden armrests; loose seat and back cushions.
+function ekenaset(r, f) {
+  const { g, w, d } = G(r, f), zb = -d / 2, zf = d / 2 - .09, wd = M.ekWood, fab = M.kilanda; tag('IKEA EKENÄSET', g, w, d, .86);
+  for (const sx of [-1, 1]) { const x = sx * (w / 2 - .028);
+    tube(v3(x, 0, zf + .025), v3(x, .615, zf - .03), .018, wd, g);                               // front leg runs up to carry the armrest
+    tube(v3(x, 0, zb + .03), v3(x, .34, zb + .15), .018, wd, g); tube(v3(x, .32, zb + .145), v3(x, .6, zb + .09), .016, wd, g);   // splayed rear leg + arm post
+    const arm = lb(g, x - .03, x + .03, .6, .63, zb + .05, zf + .03, wd, .012); arm.rotation.x = .05;                     // wooden armrest, 63 cm
+    lb(g, x - .013, x + .013, .3, .345, zb + .13, zf - .01, wd); }
+  lb(g, -w / 2 + .03, w / 2 - .03, .3, .345, zf - .035, zf - .01, wd); lb(g, -w / 2 + .03, w / 2 - .03, .3, .345, zb + .13, zb + .155, wd);
+  const seat = lb(g, -.28, .28, .335, .455, zb + .2, d / 2 - .055, fab, .045); seat.rotation.x = -.05;
+  const back = lb(g, -.275, .275, .4, .78, zb + .09, zb + .2, fab, .05); back.rotation.x = -.24;
+  for (const sx of [-1, 1]) for (const sy of [.52, .66]) { const b = mesh(new THREE.SphereGeometry(.012, 10, 8), wd, g, false); b.scale.z = .4; b.position.set(sx * .12, sy, zb + .215 + (sy - .59) * -.24); }
+  lb(g, -.275, .275, .345, .365, zb + .1, zb + .2, wd);                                                              // back rail under the cushion
+}
 function sofa(r, f, n, body, cush) {
   const { g, w, d } = G(r, f), arm = .16, back = .22; tag(n > 1 ? 'Üçlü koltuk' : 'Berjer', g, w, d, .92);
   lb(g, -w / 2, w / 2, .10, .30, -d / 2, d / 2 - .04, body, .04);
@@ -827,8 +874,8 @@ kitchen([528, 211, 721, 252], [{ k: 'sink', a: 578, b: 606 }, { k: 'dw', a: 612.
 fridge([529.5, 297.5, 568, 340], 'E');
 tvUnit([529.6, 347, 548, 438], 'E'); coffee([622, 396, 667, 427]);
 dining([700, 340, 795, 394]);
-sofa([612, 322, 665, 377], 'S', 1, M.armchair, M.armCush); sofa([745, 460, 798, 514], 'N', 1, M.armchair, M.armCush);
-sofa([590, 449, 733, 502.5], 'N', 3, M.sofa, M.sofaCush);
+ekenaset([619.4, 322.3, 657.6, 368.9], 'S'); ekenaset([752.4, 463.1, 790.6, 509.7], 'N');
+landskrona([600.6, 449.4, 722.4, 502.5], 'N');
 smastad([558, 624.4, 592, 696], 'E', 2); bed([677.5, 642, 802.5, 696], 'W', false, M.throw2); nightstand([775, 609, 800.5, 638], 'W');
 shower([310.5, 343], 61, 54, 0); washer([389, 343.5, 426, 378], 'S'); toilet([340, 430, 364, 464], 'N'); vanity([388, 434, 428, 464], 'N'); bin(370, 454);
 kombi([538, 173, 569, 199], 'N');
@@ -837,7 +884,7 @@ paxForsand([556.5, 712, 592.3, 843.3], 'E', -1); bed([665, 712, 750.4, 837], 'S'
 nightstand([632.5, 712, 663, 741], 'S'); nightstand([752.5, 712, 781.7, 741], 'S');
 kitchen([602.5, 925, 763, 966], [{ k: 'wm', a: 602.5, b: 628.7 }, { k: 'hob', a: 632, b: 669.5 }, { k: 'sink', a: 683, b: 712.5 }, { k: 'dw', a: 725.5, b: 761 }], .04);
 fridge([763, 925, 804.5, 967], 'S');
-tvUnit([492, 1009, 509, 1099], 'E'); sofa([520, 1113, 663, 1167.5], 'N', 3, M.sofa, M.sofaCush); sofa([612, 1040, 665, 1095], 'W', 1, M.armchair, M.armCush);
+tvUnit([492, 1009, 509, 1099], 'E'); landskrona([530.6, 1114.4, 652.4, 1167.5], 'N'); coffee([545, 1061, 590, 1092]); ekenaset([615.2, 1048.4, 661.8, 1086.6], 'W');
 dining([700, 1050, 795, 1104]);
 smastad([298, 977, 405.5, 1011], 'S', 3); bed([425, 1052, 479, 1174], 'N', false, M.throw1); nightstand([397, 1136, 423, 1164], 'N');
 dresser([748, 889, 803, 916], 'N');
@@ -860,7 +907,7 @@ function books(x, y, h) { const g = new THREE.Group(); g.position.set(X(x), h, Z
 rug([602, 384, 690, 441]); rug([522, 1026, 604, 1106]);
 art([700, 517.8], [632, 517.8], 1.2, 1.95, 5); art([518.3, 166], [518.3, 209], 1.3, 1.8, 9); art([682, 710.7], [733, 710.7], 1.3, 1.8, 14);
 art([772, 698.8], [722, 698.8], 1.2, 1.7, 23);
-vase(634, 408, .41); books(654, 414, .41); vase(538.5, 362, .48); vase(500.5, 1022, .48); books(500.5, 1085, .48);
+vase(634, 408, .41); books(654, 414, .41); vase(538.5, 362, .48); vase(500.5, 1022, .48); books(500.5, 1085, .48); vase(557, 1073, .41); books(577, 1079, .41);
 const LIGHTS = [[665, 385], [410, 200], [680, 610], [372, 402], [483, 440], [650, 1055], [690, 815], [390, 1070], [358, 905], [505, 650]];
 LIGHTS.forEach(l => { const m = mesh(new THREE.CylinderGeometry(.17, .17, .04, 40), M.lamp, fixtures, false); m.position.set(X(l[0]), H - .02, Z(l[1]));
   const k = mesh(new THREE.CylinderGeometry(.185, .185, .025, 40), M.white, fixtures, false); k.position.set(X(l[0]), H - .0125, Z(l[1])); });
