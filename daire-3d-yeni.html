@@ -475,13 +475,14 @@ wall([745, 252.5], [816.5, 252.5], 11, [door(750, 800, 800, [775, 290], 'glass',
 wall([430, 1183.75], [816.5, 1183.75], 11.5, [win(594, 682, .9, 2.3, [640, 1100], 'blind'), door(750, 800, 800, [775, 1150], 'glass', 2.3)]);
 wall([284, 1142.4], [432, 1184.7], 10.6, [win(336, 422, .9, 2.3, [380, 1080], 'blind')]);                                    // D2 çocuk, slanted
 // --- balcony parapets (1 m) with metal coping
-const par = { h: 1.0, top: M.coping };
-wall([518.5, 81.6], [828, 170], 8.8, [], par); wall([823.5, 165], [823.5, 255], 9, [], par); bx(816.5, 247, 828, 255, 0, 1, M.wall, M.coping);
-wall([494.5, 1215.7], [828, 1311], 8.5, [], par); wall([823.5, 1180], [823.5, 1315], 9, [], par);
-bx(816.5, 1180, 828, 1189.5, 0, 1, M.wall, M.coping); bx(494.5, 1189.5, 503.5, 1222, 0, 1, M.wall, M.coping);
+// Each balcony parapet is one mitred band traced from the plan (outer edge, then inner edge), so the corners close cleanly
+// instead of separate boxes overlapping or leaving notches where the slanted side meets the straight ones.
+function parapet(pts) { prism(pts, 0, 1.0, M.wall); prism(pts, 1.0, 1.03, M.coping); }
+parapet([[518.5, 77], [828, 165.4], [828, 255], [816.5, 255], [816.5, 247], [819, 247], [819, 172], [527.5, 88.7], [527.5, 91], [518.5, 91]]);                 // Daire 1
+parapet([[494.5, 1189.5], [494.5, 1220], [828, 1315], [828, 1180], [816.5, 1180], [816.5, 1189.5], [819, 1189.5], [819, 1303.9], [503.5, 1213.8], [503.5, 1189.5]]);   // Daire 2
 
 // --- Daire 1 (üst) interior walls
-wall([523, 79], [523, 526], 9, [door(446, 500, 500, [560, 470])]);                                     // yatak | balkon, salon | antre
+wall([523, 91], [523, 526], 9, [door(446, 500, 500, [560, 470])]);                                     // yatak | balkon, salon | antre
 wall([300, 338], [527.5, 338], 10, [door(459.6, 515, 515, [487, 300])]);                               // yatak odası kapısı
 wall([442.75, 343], [442.75, 464], 8.5, [door(378, 432, 378, [400, 400])]);                            // banyo kapısı
 wall([518.5, 522], [816.5, 522], 8); bx(654.6, 517, 746, 534, 0, H, M.wall);                           // salon | çocuk + perde
